@@ -262,11 +262,11 @@
                 <form id="reportForm">
                     <div class="radio-group">
                         <div class="radio-option" onclick="selectReportType('commit')">
-                            <input type="radio" id="commit" name="reportType" value="commit" checked>
+                            <input type="radio" id="commit" name="reportType" value="commit">
                             <label for="commit">📝 커밋 기반 리포트</label>
                         </div>
                         <div class="radio-option" onclick="selectReportType('pr')">
-                            <input type="radio" id="pr" name="reportType" value="pr">
+                            <input type="radio" id="pr" name="reportType" value="pr" checked>
                             <label for="pr">🔀 PR 기반 리포트</label>
                         </div>
                     </div>
@@ -362,7 +362,7 @@
 
         // 초기 상태 설정
         document.addEventListener('DOMContentLoaded', function() {
-            selectReportType('commit');
+            selectReportType('pr');
         });
 
         document.getElementById('reportForm').addEventListener('submit', async function(e) {
