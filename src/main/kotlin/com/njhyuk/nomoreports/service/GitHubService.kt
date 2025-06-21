@@ -4,7 +4,6 @@ import com.njhyuk.nomoreports.model.GitHubCommit
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitBody
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -19,7 +18,7 @@ class GitHubService(
     @Value("\${app.github.default-host:https://api.github.com}")
     private lateinit var defaultHost: String
 
-    suspend fun getCommits(
+    fun getCommits(
         repository: String?,
         author: String,
         since: LocalDate,
@@ -34,7 +33,7 @@ class GitHubService(
         }
     }
 
-    private suspend fun getCommitsFromRepository(
+    private fun getCommitsFromRepository(
         repository: String,
         author: String,
         since: LocalDate,
@@ -78,13 +77,14 @@ class GitHubService(
             client.get()
                 .uri(uriBuilder.toString())
                 .retrieve()
-                .awaitBody()
+                .bodyToMono(List::class.java)
+                .block() as List<GitHubCommit>
         } catch (e: Exception) {
             throw RuntimeException("Failed to fetch commits from GitHub: ${e.message}", e)
         }
     }
 
-    private suspend fun getCommitsFromUserEvents(
+    private fun getCommitsFromUserEvents(
         author: String,
         since: LocalDate,
         until: LocalDate?,
@@ -126,7 +126,8 @@ class GitHubService(
             val events: List<Map<String, Any>> = client.get()
                 .uri(uriBuilder.toString())
                 .retrieve()
-                .awaitBody()
+                .bodyToMono(List::class.java)
+                .block() as List<Map<String, Any>>
 
             // PushEvent만 필터링하고 커밋 정보 추출
             events.filter { event ->
