@@ -22,7 +22,7 @@ open http://localhost:8080
 
 - **Backend**: Kotlin + Spring Boot 3.5.3
 - **Frontend**: HTML5 + CSS3 + JavaScript (Vanilla)
-- **LLM**: Ollama (mistral, zephyr, phi 등)
+- **LLM**: Ollama (mistral)
 - **API**: GitHub REST API v3
 - **Container**: Docker + Docker Compose
 
