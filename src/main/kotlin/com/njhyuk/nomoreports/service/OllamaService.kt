@@ -107,7 +107,7 @@ class OllamaService(
         val prompt = buildString {
             appendLine("다음은 최근 몇 달간의 커밋 메시지입니다.")
             appendLine("이 커밋들을 바탕으로 개발자의 주요 성과와 개선점을 3~5줄로 요약해주세요.")
-            appendLine("반드시 한글로 답변해주세요.")
+            appendLine("반드시 한글로만 답변해주세요. 영어 사용을 금지합니다.")
             appendLine()
             commitMessages.forEachIndexed { index, message ->
                 appendLine("${index + 1}. $message")
