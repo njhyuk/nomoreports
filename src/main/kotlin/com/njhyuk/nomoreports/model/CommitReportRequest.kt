@@ -11,5 +11,6 @@ data class CommitReportRequest(
     @JsonFormat(pattern = "yyyy-MM-dd")
     val until: LocalDate? = null,
     val host: String = "https://api.github.com",
-    val token: String? = null
+    val token: String? = null,
+    val reportType: String? = "commit" // "commit" 또는 "pr"
 ) 
