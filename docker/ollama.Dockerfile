@@ -1,12 +1,10 @@
 FROM ollama/ollama:latest
 
-# wget 설치 (Ubuntu/Debian 기반이므로 apt 사용)
-RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+ARG OLLAMA_MODEL=mistral:7b
 
-# 초기화 스크립트 복사
-COPY ollama-init.sh /ollama-init.sh
-RUN chmod +x /ollama-init.sh
+# Download the model during the build
+RUN /bin/sh -c "ollama serve & sleep 10 && ollama pull ${OLLAMA_MODEL} && pkill ollama"
 
+# The default entrypoint from ollama/ollama is `ollama serve`
+# 컨테이너가 시작되면 자동으로 ollama serve가 실행됩니다.
 EXPOSE 11434
-
-ENTRYPOINT ["/bin/bash", "/ollama-init.sh"] 
