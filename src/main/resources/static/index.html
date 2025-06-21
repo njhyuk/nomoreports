@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NoMoreReports - GitHub 커밋 리포트 생성기</title>
+    <title>NoMoreReports - GitHub 커밋/PR 리포트 생성기</title>
     <style>
         * {
             margin: 0;
@@ -88,6 +88,42 @@
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .radio-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .radio-option.selected {
+            border-color: #667eea;
+            background-color: #f8f9ff;
         }
 
         .required {
@@ -217,21 +253,32 @@
     <div class="container">
         <div class="header">
             <h1>🚀 NoMoreReports</h1>
-            <p>GitHub 커밋 리포트 생성기</p>
+            <p>GitHub 커밋/PR 리포트 생성기</p>
         </div>
 
         <div class="content">
             <div class="form-section">
                 <h2>📋 리포트 생성 설정</h2>
                 <form id="reportForm">
+                    <div class="radio-group">
+                        <div class="radio-option" onclick="selectReportType('commit')">
+                            <input type="radio" id="commit" name="reportType" value="commit" checked>
+                            <label for="commit">📝 커밋 기반 리포트</label>
+                        </div>
+                        <div class="radio-option" onclick="selectReportType('pr')">
+                            <input type="radio" id="pr" name="reportType" value="pr">
+                            <label for="pr">🔀 PR 기반 리포트</label>
+                        </div>
+                    </div>
+
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="author">작성자 <span class="required">*</span></label>
                             <input type="text" id="author" name="author" required placeholder="예: njhyuk">
                         </div>
                         <div class="form-group">
-                            <label for="repository">저장소</label>
-                            <input type="text" id="repository" name="repository" placeholder="선택사항 (예: owner/repo)">
+                            <label for="repository">저장소 <span id="repoRequired" class="required" style="display: none;">*</span></label>
+                            <input type="text" id="repository" name="repository" placeholder="예: owner/repo">
                         </div>
                         <div class="form-group">
                             <label for="since">시작 날짜 <span class="required">*</span></label>
@@ -258,16 +305,17 @@
 
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
-                    <p>커밋을 분석하고 리포트를 생성하는 중...</p>
+                    <p id="loadingText">커밋을 분석하고 리포트를 생성하는 중...</p>
                 </div>
 
                 <div class="examples">
                     <h3>💡 사용 예시</h3>
                     <ul>
-                        <li><strong>GitHub.com:</strong> 작성자: njhyuk, 저장소: 비워두거나 owner/repo, 호스트: https://api.github.com</li>
-                        <li><strong>GitHub Enterprise:</strong> 작성자: user, 저장소: 비워두거나 org/repo, 호스트: https://github.company.com</li>
+                        <li><strong>커밋 기반:</strong> 작성자의 모든 커밋을 분석하여 성과를 요약합니다</li>
+                        <li><strong>PR 기반:</strong> 저장소의 PR 제목을 분석하여 성과를 요약합니다 (저장소 필수)</li>
+                        <li><strong>GitHub.com:</strong> 작성자: njhyuk, 저장소: owner/repo, 호스트: https://api.github.com</li>
+                        <li><strong>GitHub Enterprise:</strong> 작성자: user, 저장소: org/repo, 호스트: https://github.company.com</li>
                         <li><strong>Private 저장소:</strong> GitHub 토큰을 입력하여 접근 권한을 확보하세요</li>
-                        <li><strong>저장소 미입력:</strong> 해당 사용자의 모든 저장소 커밋을 가져옵니다</li>
                     </ul>
                 </div>
             </div>
@@ -280,6 +328,43 @@
     </div>
 
     <script>
+        function selectReportType(type) {
+            // 라디오 버튼 선택
+            document.getElementById(type).checked = true;
+            
+            // 라디오 옵션 스타일 업데이트
+            document.querySelectorAll('.radio-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // 저장소 필수 여부 업데이트
+            const repoRequired = document.getElementById('repoRequired');
+            const repository = document.getElementById('repository');
+            if (type === 'pr') {
+                repoRequired.style.display = 'inline';
+                repository.required = true;
+                repository.placeholder = '필수: owner/repo';
+            } else {
+                repoRequired.style.display = 'none';
+                repository.required = false;
+                repository.placeholder = '선택사항 (예: owner/repo)';
+            }
+            
+            // 로딩 텍스트 업데이트
+            const loadingText = document.getElementById('loadingText');
+            if (type === 'pr') {
+                loadingText.textContent = 'PR을 분석하고 리포트를 생성하는 중...';
+            } else {
+                loadingText.textContent = '커밋을 분석하고 리포트를 생성하는 중...';
+            }
+        }
+
+        // 초기 상태 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            selectReportType('commit');
+        });
+
         document.getElementById('reportForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -295,7 +380,8 @@
                 since: formData.get('since'),
                 until: formData.get('until') || null,
                 host: formData.get('host') || 'https://api.github.com',
-                token: formData.get('token') || null
+                token: formData.get('token') || null,
+                reportType: formData.get('reportType') || 'commit'
             };
 
             // UI 상태 변경
@@ -305,7 +391,7 @@
             resultSection.style.display = 'none';
 
             try {
-                const response = await fetch('/api/commit-report', {
+                const response = await fetch('/api/report', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
