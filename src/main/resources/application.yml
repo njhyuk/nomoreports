@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: nomorereports
+
+app:
+  github:
+    default-host: https://api.github.com
+    default-token: ${GITHUB_TOKEN:}
+  ollama:
+    base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+    model: ${OLLAMA_MODEL:mistral}
+
+logging:
+  level:
+    com.njhyuk.nomoreports: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG 

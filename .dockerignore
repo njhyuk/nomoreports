@@ -1,0 +1,10 @@
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+.idea
+.vscode
+*.md
+build/
+!src/main/resources/static/ 

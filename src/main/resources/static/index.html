@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoMoreReports - GitHub 커밋 리포트 생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .result-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .report-textarea {
+            width: 100%;
+            min-height: 500px;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            background: #f8f9fa;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #363;
+        }
+
+        .examples {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .examples h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .examples ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .examples li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .examples li:before {
+            content: "•";
+            color: #667eea;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 NoMoreReports</h1>
+            <p>GitHub 커밋 리포트 생성기</p>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>📋 리포트 생성 설정</h2>
+                <form id="reportForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="author">작성자 <span class="required">*</span></label>
+                            <input type="text" id="author" name="author" required placeholder="예: njhyuk">
+                        </div>
+                        <div class="form-group">
+                            <label for="repository">저장소 <span class="required">*</span></label>
+                            <input type="text" id="repository" name="repository" required placeholder="예: owner/repo">
+                        </div>
+                        <div class="form-group">
+                            <label for="since">시작 날짜 <span class="required">*</span></label>
+                            <input type="date" id="since" name="since" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="until">종료 날짜</label>
+                            <input type="date" id="until" name="until" placeholder="선택사항">
+                        </div>
+                        <div class="form-group">
+                            <label for="host">GitHub (또는 GitHub Enterprise) 호스트</label>
+                            <input type="text" id="host" name="host" placeholder="https://api.github.com" value="https://api.github.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="token">GitHub 토큰</label>
+                            <input type="password" id="token" name="token" placeholder="선택사항 (private repo용)">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        📊 리포트 생성
+                    </button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>커밋을 분석하고 리포트를 생성하는 중...</p>
+                </div>
+
+                <div class="examples">
+                    <h3>💡 사용 예시</h3>
+                    <ul>
+                        <li><strong>GitHub.com:</strong> 작성자: njhyuk, 저장소: owner/repo, 호스트: https://api.github.com</li>
+                        <li><strong>GitHub Enterprise:</strong> 작성자: user, 저장소: org/repo, 호스트: https://github.company.com</li>
+                        <li><strong>Private 저장소:</strong> GitHub 토큰을 입력하여 접근 권한을 확보하세요</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <h2>📄 생성된 리포트</h2>
+                <textarea class="report-textarea" id="reportOutput" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('reportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const resultSection = document.getElementById('resultSection');
+            
+            // 폼 데이터 수집
+            const formData = new FormData(e.target);
+            const requestData = {
+                author: formData.get('author'),
+                repository: formData.get('repository'),
+                since: formData.get('since'),
+                until: formData.get('until') || null,
+                host: formData.get('host') || 'https://api.github.com',
+                token: formData.get('token') || null
+            };
+
+            // UI 상태 변경
+            submitBtn.disabled = true;
+            submitBtn.textContent = '생성 중...';
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/commit-report', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 성공 시 리포트 표시
+                    document.getElementById('reportOutput').value = result.report;
+                    resultSection.style.display = 'block';
+                    
+                    // 성공 메시지 표시
+                    showMessage('✅ 리포트가 성공적으로 생성되었습니다!', 'success');
+                } else {
+                    // 오류 메시지 표시
+                    showMessage(`❌ 오류: ${result.error || '알 수 없는 오류가 발생했습니다.'}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`❌ 네트워크 오류: ${error.message}`, 'error');
+            } finally {
+                // UI 상태 복원
+                submitBtn.disabled = false;
+                submitBtn.textContent = '📊 리포트 생성';
+                loading.style.display = 'none';
+            }
+        });
+
+        function showMessage(message, type) {
+            // 기존 메시지 제거
+            const existingMessage = document.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            // 새 메시지 생성
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            
+            // 폼 다음에 삽입
+            const form = document.getElementById('reportForm');
+            form.parentNode.insertBefore(messageDiv, form.nextSibling);
+
+            // 5초 후 자동 제거
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // 오늘 날짜를 기본값으로 설정
+        document.getElementById('since').value = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html> 
