@@ -88,7 +88,8 @@ class CommitReportController(
                 owner = owner,
                 repo = repo,
                 since = request.since,
-                token = request.token
+                token = request.token,
+                host = request.host
             )
 
             // 2. PR 제목으로 성과 요약 생성

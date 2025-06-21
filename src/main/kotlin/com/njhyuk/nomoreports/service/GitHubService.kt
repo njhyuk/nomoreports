@@ -41,13 +41,10 @@ class GitHubService(
         host: String,
         token: String?
     ): List<GitHubCommit> {
-        // GitHub.com의 경우 기본 URL 사용, GHE의 경우 /api/v3 추가
-        val apiUrl = if (host.contains("github.com") && !host.contains("/api/v3")) {
-            host
-        } else if (host.contains("/api/v3")) {
-            host
-        } else {
-            "$host/api/v3"
+        val apiUrl = when {
+            host.contains("api.github.com") -> host.trimEnd('/')
+            host.contains("/api/") -> host.trimEnd('/')
+            else -> host.trimEnd('/') + "/api/v3"
         }
         
         val client = if (token != null && token.isNotBlank()) {
@@ -80,7 +77,7 @@ class GitHubService(
                 .bodyToMono(List::class.java)
                 .block() as List<GitHubCommit>
         } catch (e: Exception) {
-            throw RuntimeException("Failed to fetch commits from GitHub: ${e.message}", e)
+            throw RuntimeException("Failed to fetch commits from GitHub: "+e.message, e)
         }
     }
 
@@ -91,13 +88,10 @@ class GitHubService(
         host: String,
         token: String?
     ): List<GitHubCommit> {
-        // GitHub.com의 경우 기본 URL 사용, GHE의 경우 /api/v3 추가
-        val apiUrl = if (host.contains("github.com") && !host.contains("/api/v3")) {
-            host
-        } else if (host.contains("/api/v3")) {
-            host
-        } else {
-            "$host/api/v3"
+        val apiUrl = when {
+            host.contains("api.github.com") -> host.trimEnd('/')
+            host.contains("/api/") -> host.trimEnd('/')
+            else -> host.trimEnd('/') + "/api/v3"
         }
         
         val client = if (token != null && token.isNotBlank()) {
@@ -174,7 +168,7 @@ class GitHubService(
                 }
             }
         } catch (e: Exception) {
-            throw RuntimeException("Failed to fetch user events from GitHub: ${e.message}", e)
+            throw RuntimeException("Failed to fetch user events from GitHub: "+e.message, e)
         }
     }
 

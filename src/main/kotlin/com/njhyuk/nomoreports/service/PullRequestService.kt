@@ -2,7 +2,6 @@ package com.njhyuk.nomoreports.service
 
 import com.njhyuk.nomoreports.model.PullRequest
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -19,15 +18,21 @@ class PullRequestService(
         owner: String,
         repo: String,
         since: LocalDate,
-        token: String
+        token: String?,
+        host: String = "https://api.github.com"
     ): List<PullRequest> {
-        val url = "https://api.github.com/repos/$owner/$repo/pulls"
+        val apiHost = when {
+            host.contains("api.github.com") -> host.trimEnd('/')
+            host.contains("/api/") -> host.trimEnd('/')
+            else -> host.trimEnd('/') + "/api/v3"
+        }
+        val url = "$apiHost/repos/$owner/$repo/pulls"
         val sinceStr = since.format(DateTimeFormatter.ISO_LOCAL_DATE)
         
-        logger.info("Fetching PRs for $owner/$repo since $sinceStr")
+        logger.info("Fetching PRs for $owner/$repo since $sinceStr from $apiHost")
 
         return try {
-            val response = webClient.get()
+            val builder = webClient.get()
                 .uri(url) { uriBuilder ->
                     uriBuilder
                         .queryParam("state", "all")
@@ -36,8 +41,13 @@ class PullRequestService(
                         .queryParam("per_page", "100")
                         .build()
                 }
-                .header("Authorization", "token $token")
                 .header("Accept", "application/vnd.github.v3+json")
+
+            if (!token.isNullOrBlank()) {
+                builder.header("Authorization", "token $token")
+            }
+
+            val response = builder
                 .retrieve()
                 .bodyToMono(Array<PullRequest>::class.java)
                 .block()
