@@ -6,8 +6,6 @@ GitHub 또는 GitHub Enterprise 저장소에서 특정 작성자의 커밋 메�
 
 ## 🚀 빠른 시작
 
-### Docker Compose로 실행 (권장)
-
 ```bash
 # 저장소 클론
 git clone https://github.com/njhyuk/nomoreports
