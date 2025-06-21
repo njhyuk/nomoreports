@@ -7,18 +7,18 @@ import java.time.format.DateTimeFormatter
 
 @Service
 class ReportService {
-
-    fun generateMarkdownReport(
+    fun generateMarkdownReportWithSummary(
         commits: List<ClassifiedCommit>,
         author: String,
         repository: String,
         since: String,
-        until: String?
+        until: String?,
+        summary: String
     ): String {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        
         val report = StringBuilder()
         report.append("# NoMoreReports - 커밋 리포트\n\n")
+        report.append("## 🏆 성과 요약\n\n")
+        report.append(summary.trim()).append("\n\n")
         report.append("## 📊 요약 정보\n\n")
         report.append("- **저장소**: `$repository`\n")
         report.append("- **작성자**: `$author`\n")
@@ -28,7 +28,7 @@ class ReportService {
         // 타입별 통계
         val typeStats = commits.groupBy { it.type }
         report.append("## 📈 타입별 통계\n\n")
-        CommitType.values().forEach { type ->
+        CommitType.entries.forEach { type ->
             val count = typeStats[type]?.size ?: 0
             val percentage = if (commits.isNotEmpty()) {
                 String.format("%.1f", (count.toDouble() / commits.size) * 100)
@@ -38,16 +38,15 @@ class ReportService {
         report.append("\n")
 
         // 날짜별 커밋
-        val dateGroups = commits.groupBy { 
+        val dateGroups = commits.groupBy {
             it.date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         }.toSortedMap(compareByDescending { it })
 
         report.append("## 📅 날짜별 커밋\n\n")
         dateGroups.forEach { (date, dayCommits) ->
             report.append("### $date (${dayCommits.size}개)\n\n")
-            
             val typeGroups = dayCommits.groupBy { it.type }
-            CommitType.values().forEach { type ->
+            CommitType.entries.forEach { type ->
                 val typeCommits = typeGroups[type] ?: emptyList()
                 if (typeCommits.isNotEmpty()) {
                     report.append("#### ${type.emoji} ${type.label}\n\n")
@@ -59,7 +58,6 @@ class ReportService {
                 }
             }
         }
-
         return report.toString()
     }
 } 

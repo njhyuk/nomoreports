@@ -6,6 +6,8 @@ import com.njhyuk.nomoreports.model.OllamaResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @Service
 class OllamaService(
@@ -17,6 +19,8 @@ class OllamaService(
     
     @Value("\${app.ollama.model:tinyllama}")
     private lateinit var model: String
+
+    private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     fun classifyCommitsBatch(commitMessages: List<String>): List<CommitType> {
         if (commitMessages.isEmpty()) return emptyList()
@@ -95,5 +99,46 @@ class OllamaService(
         
         // 4. 응답이 많으면 잘라냄
         return extractedTypes.take(expectedCount)
+    }
+
+    fun summarizeCommits(commitMessages: List<String>): String {
+        if (commitMessages.isEmpty()) return "성과 요약을 생성할 커밋이 없습니다."
+
+        val prompt = buildString {
+            appendLine("다음은 최근 몇 달간의 커밋 메시지입니다.")
+            appendLine("이 커밋들을 바탕으로 개발자의 주요 성과와 개선점을 3~5줄로 요약해주세요.")
+            appendLine("반드시 한글로 답변해주세요.")
+            appendLine()
+            commitMessages.forEachIndexed { index, message ->
+                appendLine("${index + 1}. $message")
+            }
+        }
+
+        logger.debug("=== OLLAMA SUMMARY PROMPT ===")
+        logger.debug(prompt)
+        logger.debug("=============================")
+
+        val request = OllamaRequest(
+            model = model,
+            prompt = prompt
+        )
+
+        return try {
+            val response = webClient.post()
+                .uri("$baseUrl/api/generate")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(OllamaResponse::class.java)
+                .block()
+
+            val responseText = response?.response?.trim() ?: "요약 생성 실패"
+            logger.debug("=== OLLAMA SUMMARY RESPONSE ===")
+            logger.debug(responseText)
+            logger.debug("==============================")
+            responseText
+        } catch (e: Exception) {
+            logger.error("Ollama 성과 요약 API 호출 실패", e)
+            "요약 생성 실패"
+        }
     }
 } 
