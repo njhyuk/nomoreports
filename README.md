@@ -13,10 +13,6 @@ GitHub 또는 GitHub Enterprise 저장소에서 특정 작성자의 커밋 메�
 git clone https://github.com/njhyuk/nomoreports
 cd nomoreports
 
-# 환경 변수 설정 (선택사항)
-export GITHUB_TOKEN=your_github_token
-export GITHUB_HOST=https://github.company.com  # GitHub Enterprise 사용 시
-
 # Docker Compose로 실행
 docker-compose up -d
 
