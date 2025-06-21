@@ -1,9 +1,22 @@
 server:
   port: 8080
+  servlet:
+    async:
+      request-timeout: 600000
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 600000
 
 spring:
   application:
     name: nomorereports
+  webflux:
+    base-path: /
+  mvc:
+    async:
+      request-timeout: 600000
 
 app:
   github:
