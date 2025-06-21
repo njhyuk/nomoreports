@@ -6,26 +6,43 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-      - GITHUB_HOST=${GITHUB_HOST:-https://api.github.com}
       - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-mistral}
+      - OLLAMA_MODEL=tinyllama
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
     networks:
       - nomorereports-network
+    restart: unless-stopped
 
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: ./docker
+      dockerfile: ollama.Dockerfile
     ports:
       - "11434:11434"
     volumes:
-      - ollama-data:/root/.ollama
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
     networks:
       - nomorereports-network
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
 
 volumes:
-  ollama-data:
+  ollama_data:
 
 networks:
   nomorereports-network:

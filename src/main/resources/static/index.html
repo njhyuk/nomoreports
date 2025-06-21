@@ -230,8 +230,8 @@
                             <input type="text" id="author" name="author" required placeholder="예: njhyuk">
                         </div>
                         <div class="form-group">
-                            <label for="repository">저장소 <span class="required">*</span></label>
-                            <input type="text" id="repository" name="repository" required placeholder="예: owner/repo">
+                            <label for="repository">저장소</label>
+                            <input type="text" id="repository" name="repository" placeholder="선택사항 (예: owner/repo)">
                         </div>
                         <div class="form-group">
                             <label for="since">시작 날짜 <span class="required">*</span></label>
@@ -264,9 +264,10 @@
                 <div class="examples">
                     <h3>💡 사용 예시</h3>
                     <ul>
-                        <li><strong>GitHub.com:</strong> 작성자: njhyuk, 저장소: owner/repo, 호스트: https://api.github.com</li>
-                        <li><strong>GitHub Enterprise:</strong> 작성자: user, 저장소: org/repo, 호스트: https://github.company.com</li>
+                        <li><strong>GitHub.com:</strong> 작성자: njhyuk, 저장소: 비워두거나 owner/repo, 호스트: https://api.github.com</li>
+                        <li><strong>GitHub Enterprise:</strong> 작성자: user, 저장소: 비워두거나 org/repo, 호스트: https://github.company.com</li>
                         <li><strong>Private 저장소:</strong> GitHub 토큰을 입력하여 접근 권한을 확보하세요</li>
+                        <li><strong>저장소 미입력:</strong> 해당 사용자의 모든 저장소 커밋을 가져옵니다</li>
                     </ul>
                 </div>
             </div>

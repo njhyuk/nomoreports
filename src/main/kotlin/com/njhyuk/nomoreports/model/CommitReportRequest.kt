@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 data class CommitReportRequest(
     val author: String,
-    val repository: String,
+    val repository: String? = null,
     @JsonFormat(pattern = "yyyy-MM-dd")
     val since: LocalDate,
     @JsonFormat(pattern = "yyyy-MM-dd")

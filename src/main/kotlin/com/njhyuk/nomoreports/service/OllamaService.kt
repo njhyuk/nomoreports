@@ -16,7 +16,7 @@ class OllamaService(
     @Value("\${app.ollama.base-url:http://localhost:11434}")
     private lateinit var baseUrl: String
     
-    @Value("\${app.ollama.model:mistral}")
+    @Value("\${app.ollama.model:llama2}")
     private lateinit var model: String
 
     suspend fun classifyCommit(message: String): CommitType {

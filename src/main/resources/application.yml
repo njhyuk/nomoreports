@@ -11,7 +11,7 @@ app:
     default-token: ${GITHUB_TOKEN:}
   ollama:
     base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-    model: ${OLLAMA_MODEL:mistral}
+    model: ${OLLAMA_MODEL:tinyllama}
 
 logging:
   level:
